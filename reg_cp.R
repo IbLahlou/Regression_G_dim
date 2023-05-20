@@ -39,9 +39,13 @@ for(i in 1:7){
   # Example usage
   result <- pca_regression(X_tr, y_tr, X_ts, y_ts, opt_cmp = i)
   
+  beta_cp <- result$beta
+  mse_cp <- result$mse
+  acc_cp <- result$accuracy*100
+  
   #4.Statistics
-  cat("Beta Coefficients:", result$beta, "\n")
-  cat("MSE:", result$mse, "\n")
-  cat("Accuracy:", result$accuracy * 100, "%\n")
+  cat("Beta Coefficients:", beta_cp, "\n")
+  cat("MSE:", mse_cp, "\n")
+  cat("Accuracy:", acc_cp , "%\n")
   cat("---------------------------------------------------------------------------------------------------------------------------------\n")
 }
