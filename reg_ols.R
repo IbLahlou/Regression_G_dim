@@ -1,22 +1,37 @@
-source("featureSelection.R")
+
 
 # 1 OLS MODEL
-ols_model <- function(X_tr,y_tr){
-beta <- solve(t(X_tr) %*% X_tr) %*% t(X_tr) %*% y_tr
-return(beta)
+ols_model <- function(X_tr, y_tr) {
+  beta <- solve(t(X_tr) %*% X_tr) %*% t(X_tr) %*% y_tr
+  return(beta)
 }
 
 
 # 2 OLS MEAN SQUARED ERROR
-mse_ols <- function(y, yhat) {
-  mse <- mean((y - yhat)^2)
+ols_mse <- function(y_ts, yhat) {
+  mse <- mean((y_ts - yhat) ^ 2)
   return(mse)
 }
 
-# 3 FEATURE SELECTION 
-result <- feature_selection(X_tr, y_tr, X_ts, y_ts, ols_model, mse_ols)
+# 3 OLS ACCURACY
+ols_accuracy <- function(y_ts, yhat) {
+  acc <- (1 -  mean((y_ts - yhat) ^ 2) / var(y_ts)) * 100
+  return(acc)
+}
 
-cat("Selected Features:", result$sel_features, "\n")
-cat("Beta Coefficients:", result$beta, "\n")
-cat("MSE:", result$mse, "\n")
-cat("Accuracy:", result$accuracy, "\n")
+# 4 Evaluation
+
+
+
+beta = ols_model(X_tr, y_tr)
+yhat <- X_ts %*% beta
+mse = ols_mse(y_ts, yhat)
+accuracy = ols_accuracy(y_ts, yhat)
+
+cat("Statistics:\n")
+mySummary(X_tr,y_tr,beta)
+cat("MSE:", mse, "\n")
+cat("Accuracy:", accuracy, "\n")
+
+
+

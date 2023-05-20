@@ -22,9 +22,6 @@ y_tr <- y[tr_idx]
 X_ts <- X[ts_idx,-9]
 y_ts <- y[ts_idx]
 
-X_tr <- cbind(1, X_tr)
-X_ts <- cbind(1, X_ts)
-
 
 # Visualisation de la corrélation entre les features du dataset
 #cor(X_tr_scaled)
