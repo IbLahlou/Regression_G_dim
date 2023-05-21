@@ -46,7 +46,7 @@ et les noms des variables sélectionnées par chaque modèle.
 
 ## Problematique
 
-- Echec en utilisation de la méthode LOOCV pour regression ridge et elastic net pour la recherche des meilleurs lambda (j'ai opté pour le grid search)
+- Echec à l'utilisation de la méthode LOOCV pour regression ridge et elastic net pour la recherche des meilleurs lambda (j'ai opté pour le grid search)
 
 ## Contact
 
