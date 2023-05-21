@@ -67,7 +67,7 @@ lambda_list <- seq(1, 100, 1)
 
 result <- lasso_feature_selection(X_tr, y_tr, X_ts, y_ts, lambda_list)
 
-beta_lasso <- result$beta
+beta_lasso <-result$beta
 mse_lasso <- result$mse
 acc_lasso <- result$acc*100
 

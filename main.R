@@ -25,5 +25,24 @@ y_ts <- y[ts_idx]
 
 # Visualisation de la corrélation entre les features du dataset
 #cor(X_tr_scaled)
-#library(heatmaply)
-#heatmaply(cor(X_tr_scaled), node_type = "scatter" , point_size_mat = cor(X_tr_scaled) )
+#install.packages("heatmaply)
+library(heatmaply)
+heatmaply(cor(X_tr_scaled), node_type = "scatter" , point_size_mat = cor(X_tr_scaled) )
+
+
+# Appeler chaque script individuellement
+source("mySummary.R")
+source("reg_ols.R")
+source("reg_cp.R")
+#source("reg_ridge.R") Erreur en calcul matriciel LOOCV
+source("reg_ridge_gs.R")
+source("reg_lasso.R")
+#source("reg_ElasticNet.R") Erreur en calcul matriciel LOOCV
+source("reg_ElasticNet_gs.R")
+
+# Un Graphique visualisant les meilleurs features a sélectionner
+coeff <- data.frame(beta_ols, beta_cp, beta_ridge_gs, beta_lasso, beta_elnet_gs)
+rownames(coeff) <- colnames(pros)
+heatmaply(as.matrix(coeff), main = "Features Selection")
+
+

@@ -1,73 +1,84 @@
-# Elastic net
-elastic_net <- function(X, Y, lambda_1, lambda_2, iter){
-  beta_elastic_net = matrix(rep(0, ncol(X)), nrow = ncol(X), ncol = 1, byrow = FALSE)
+# Elastic Net with LOO Cross Validation
+elastic_net_loo <- function(X, y, lambda_1, lambda_2, iter) {
+  n <- nrow(X)
+  p <- ncol(X)
+  beta_elastic_net <- matrix(rep(0, p), nrow = p, ncol = 1, byrow = FALSE)
+  betas <- matrix(0, nrow = p, ncol = n)
   
-  for (i in 1:iter) {
-    for (j in 1:ncol(X)) {
-      X_BETA = matrix(rep(0, nrow(X)), nrow = nrow(X), ncol = 1, byrow = FALSE)
-      
-      for (k in 1:ncol(X)) {
-        if (k != j) {
-          X_BETA = X_BETA + X[, k] * beta_elastic_net[k]
-        }
-      }
-      
-      R = t(X[, j]) %*% (Y - X_BETA)
-      cont = (1 - (lambda_1 / (2 * abs(R))))
-      
-      if (cont > 0) {
-        beta_elastic_net[j] = (R / ((t(X[, j]) %*% X[, j]) + lambda_2)) * cont
-      } else {
-        beta_elastic_net[j] = 0
-      }
-    }
-  }
-  
-  return(beta_elastic_net)
-}
-
-# Grid search for Elastic Net
-grid_search_elastic_net <- function(X, Y, lambda1, lambda2, iter) {
-  error <- Inf
-  bparams <- list()
-  
-  for (l1 in lambda1) {
-    for (l2 in lambda2) {
-      if (l1 != 0 && l2 != 0) {
-        beta_elastic_net <- elastic_net(X, Y, l1, l2, iter)
-        mse <- sum((Y - X %*% beta_elastic_net)^2) / nrow(X)
+  for (i in 1:n) {
+    X_tr <- X[-i, ]
+    y_tr <- y[-i]
+    
+    for (j in 1:iter) {
+      for (k in 1:ncol(X_tr)) {
+        X_BETA = matrix(rep(0, nrow(X_tr)), nrow = nrow(X_tr), ncol = 1, byrow = FALSE)
         
-        if (mse < error) {
-          error <- mse
-          bparams$lambda1 <- l1
-          bparams$lambda2 <- l2
-          bparams$beta_elastic_net <- beta_elastic_net
+        for (m in 1:ncol(X_tr)) {
+          if (m != k) {
+            X_BETA = X_BETA + X_tr[, m] * beta_elastic_net[m]
+          }
+        }
+        
+        R = t(X_tr[, k]) %*% (y_tr - X_BETA)
+        cont = (1 - (lambda_1 / (2 * abs(R))))
+        
+        if (cont > 0) {
+          beta_elastic_net[k] = (R / ((t(X_tr[, k]) %*% X_tr[, k]) + lambda_2)) * cont
+        } else {
+          beta_elastic_net[k] = 0
         }
       }
     }
+    
+    betas[, i] <- beta_elastic_net
   }
   
-  bparams$error <- error
-  return(bparams)
+  return(betas)
 }
 
-# Example usage
-iter <- 10
+# LOO Cross Validation for Elastic Net
 lambda1 <- seq(0, 10, 0.27)
 lambda2 <- seq(0, 10, 0.24)
+iter <- 10
 
-# Le process prends bq de temps pour le bons choix des paramétre c'est pour cela que j'ai opté pour le grid search une methode moins performante malheursement
-bparams <- grid_search_elastic_net(X_tr, y_tr, lambda1, lambda2, iter)
-blambda1 <- bparams$lambda1
-blambda2 <- bparams$lambda2
-beta_elnet <- bparams$beta_elastic_net
+mse_list <- c()
+betas_elnet_loo <- matrix(0, nrow = ncol(X_tr), ncol = nrow(X_tr))
+best_lambda1 <- NULL
+best_lambda2 <- NULL
 
-mse_elnet <- sum((y_ts - X_ts %*% beta_elnet)^2) / nrow(X_ts)
-acc_elnet <- ols_accuracy(y_ts, X_ts %*% beta_elnet)
+for (l1 in lambda1) {
+  for (l2 in lambda2) {
+    if (l1 != 0 && l2 != 0) {
+      betas_elnet_loo <- elastic_net_loo(X_tr, y_tr, l1, l2, iter)
+      yhat <- X_ts %*% colMeans(betas_elnet_loo)
+      mse <- sum((y_ts - yhat) ^ 2) / nrow(X_ts)
+      mse_list <- c(mse_list, mse)
+      
+      if (mse == min(mse_list)) {
+        best_lambda1 <- l1
+        best_lambda2 <- l2
+      }
+    }
+  }
+}
 
-# Print the results
-cat("Optimal lambda1:", blambda1, "\n")
-cat("Optimal lambda2:", blambda2, "\n")
-cat("Mean Squared error:", mse_elnet, "\n")
-cat("Accuracy_elnet:", acc_elnet, "\n")
-cat("Optimal beta_elnet:", beta_elnet, "\n")
+# Best lambdas and corresponding beta
+lambda1 <- best_lambda1
+lambda2 <- best_lambda2
+betas_elnet_loo <- elastic_net_loo(X_tr, y_tr, lambda1, lambda2, iter)
+beta_elnet_loo <- colMeans(betas_elnet_loo)
+
+# Prediction on the test set
+yhat <- X_ts %*% beta_elnet_loo
+
+# Mean Squared Error
+mse_elnet_loo <- sum((y_ts - yhat) ^ 2) / nrow(X_ts)
+
+# Accuracy
+acc_elnet_loo <- ols_accuracy(y_ts, yhat)
+
+cat("Optimal lambda1:", lambda1, "\n")
+cat("Optimal lambda2:", lambda2, "\n")
+cat("Mean Squared Error:", mse_elnet_loo, "\n")
+cat("Accuracy_elnet_loo:", acc_elnet_loo, "\n")
+cat("Optimal beta_elnet_loo:", beta_elnet_loo, "\n")
