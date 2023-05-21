@@ -24,10 +24,9 @@ y_ts <- y[ts_idx]
 
 
 # Visualisation de la corrélation entre les features du dataset
-#cor(X_tr_scaled)
 #install.packages("heatmaply)
 library(heatmaply)
-heatmaply(cor(X_tr_scaled), node_type = "scatter" , point_size_mat = cor(X_tr_scaled) )
+heatmaply(cor(X_tr), node_type = "scatter" , point_size_mat = cor(X_tr) )
 
 
 # Appeler chaque script individuellement
